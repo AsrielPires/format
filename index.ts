@@ -1,12 +1,13 @@
-import "inutil";
-
 import * as time from "./time";
 import * as scalar from "./scalar";
 import * as text from "./text";
 import * as bool from "./bool";
 
 export { time, scalar, text };
+type str = string;
+type bool = boolean;
 
+interface Dic<T = any> { [key: string]: T; }
 interface Locale {
   inFull: scalar.InFullUnit[]
 }
@@ -229,7 +230,7 @@ export default function fmt(value: AcceptFormatValue, exp: string, opts?: Dic) {
   if (exp == null)
     return <any>value;
   let split = exp.split(';', 3),
-    type = split.a,
+    type = split[0],
     //se o array so tiver um element então este é o format
     format = split.length > 1 ? split[1] : type;
 
@@ -260,7 +261,7 @@ export default function fmt(value: AcceptFormatValue, exp: string, opts?: Dic) {
         type = 't';
     }
   }
-  switch (split.a) {
+  switch (split[0]) {
     //date
     case 'd':
       return time.create(value).fmt(format);

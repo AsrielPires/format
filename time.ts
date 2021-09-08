@@ -282,7 +282,8 @@ module time {
     //  return new time.Time();
     //return new time.Time(input, format);
   }
-
+  
+  type Key = string | number;
   interface TimeOption {
     /**year */
     y?: Key;

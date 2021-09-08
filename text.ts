@@ -1,4 +1,5 @@
 
+interface Dic<T = any> { [key: string]: T; }
 function text(input: text.Input): text.Text {
   return new text.Text(input);
 }
@@ -120,7 +121,7 @@ module text {
     while ((temp = replaceRegex.exec(str)) !== null) {
       result.push(
         str.substring(oldLast, temp.index),
-        params(temp.a.slice(1, temp.a.length))
+        params(temp[0].slice(1, temp[0].length))
       );
       oldLast = replaceRegex.lastIndex;
     }

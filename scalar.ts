@@ -1,6 +1,11 @@
 import { PeriodType } from "./time";
 import { locale } from "./index";
-function spliceString(str: string, start: number, deleteCount: number, insert: string) {
+
+type num = number;
+type str = string;
+interface Dic<T = any> { [key: string]: T; }
+
+function splicestr(str: str, start: num, deleteCount: num, insert: str) {
   var
     left = str.slice(0, start),
     right = str.slice(start + deleteCount);
@@ -18,22 +23,22 @@ function scalar(input: scalar.Input): scalar.Scalar;
  * @param input
  * @param format 
  */
-function scalar(input: scalar.Input, format: string): scalar.Scalar;
-function scalar(input: scalar.Input, format?: string): scalar.Scalar {
+function scalar(input: scalar.Input, format: str): scalar.Scalar;
+function scalar(input: scalar.Input, format?: str): scalar.Scalar {
   return new scalar.Scalar(input, format);
 }
 module scalar {
   export interface Currency {
-    id?: number;
-    code: string;
-    symbol?: string;
-    name?: string;
-    value: number;
+    id?: num;
+    code: str;
+    symbol?: str;
+    name?: str;
+    value: num;
   }
-  export function reverseFormat(input: string, format: string) {
+  export function reverseFormat(input: str, format: str) {
     return 0;
   }
-  export function len(value: number) {
+  export function len(value: num) {
     return (value + '').length;
   }
   const checkFormats = [
@@ -52,7 +57,7 @@ module scalar {
 
     return null;
   }
-  export type Input = string | number | Scalar;
+  export type Input = str | num | Scalar;
 
   function invalidInputError() {
 
@@ -60,10 +65,10 @@ module scalar {
   export function value(input: Input) {
     switch (typeof input) {
       case "number":
-        return <number>input;
+        return <num>input;
 
       case "string":
-        return parseFloat(<string>input);
+        return parseFloat(<str>input);
 
       default:
         if (!(input instanceof Scalar))
@@ -72,7 +77,7 @@ module scalar {
     }
   }
 
-  const romanNumbers = { M: 1000, CM: 900, D: 500, CD: 400, C: 100, XC: 90, L: 50, XL: 40, X: 10, IX: 9, V: 5, IV: 4, I: 1 };
+  const romannums = { M: 1000, CM: 900, D: 500, CD: 400, C: 100, XC: 90, L: 50, XL: 40, X: 10, IX: 9, V: 5, IV: 4, I: 1 };
   const chars = "abcdefghijklmnopqrstuvwxyz";
 
   //function toRomanize
@@ -96,21 +101,21 @@ module scalar {
     { k: PeriodType.m, s: 'minuto', p: 'minutos' },
     { k: PeriodType.s, s: 'segundo', p: 'segundos' },
   ];
-  const transforms = new Map<Transform, (value: number, opts?: Dic) => string>([
-    [Transform.romanize, function (value: number) {
+  const transforms = new Map<Transform, (value: num, opts?: Dic) => str>([
+    [Transform.romanize, function (value: num) {
       let roman = '', i;
-      for (i in romanNumbers) {
-        while (value >= romanNumbers[i]) {
+      for (i in romannums) {
+        while (value >= romannums[i]) {
           roman += i;
-          value -= romanNumbers[i];
+          value -= romannums[i];
         }
       }
       return roman;
     }],
-    [Transform.letter, function (value: number) {
+    [Transform.letter, function (value: num) {
       let dividend = value;
       let result = "";
-      let modulo: number;
+      let modulo: num;
       while (dividend > 0) {
         modulo = (dividend - 1) % 26;
         result = chars[modulo] + result;
@@ -118,7 +123,7 @@ module scalar {
       }
       return result;
     }],
-    [Transform.timer, function (value: number) {
+    [Transform.timer, function (value: num) {
       let r = [], count = 2, space = 2;
 
       for (let i = 0; i < periods.length; i++) {
@@ -166,7 +171,7 @@ module scalar {
 
       return r.join(' e ');
     }],
-    [Transform.inFull, function (value: number, opts: Partial<InFullOptions>) {
+    [Transform.inFull, function (value: num, opts: Partial<InFullOptions>) {
 
       let
         vals = locale.inFull,
@@ -174,7 +179,7 @@ module scalar {
         dec = Math.round(value % 1 * 100);
 
       if (int == 0)
-        return vals.a.exp();
+        return vals[0].exp();
       if (!opts)
         opts = {};
       if (!opts.g)
@@ -236,7 +241,7 @@ module scalar {
     [SingleFormat.C]: '0,0.00 $'
   };
   export interface Locale {
-    sub: { [index: number]: any; };
+    sub: { [index: num]: any; };
   }
   export const defaultLocale: Locale = {
     sub: {
@@ -249,15 +254,15 @@ module scalar {
       4: 'M'
     }
   };
-  export function checkNumber(value: number, exp: number) {
+  export function checknum(value: num, exp: num) {
     let t = Math.pow(10, exp);
     return Math.round(value * t) / t;
   }
   export class Scalar {
     /** */
-    value: number;
+    value: num;
 
-    constructor(input: Input, format?: string) {
+    constructor(input: Input, format?: str) {
       this.value = value(input);
     }
 
@@ -273,8 +278,8 @@ module scalar {
     div(input: Input): Scalar {
       return new Scalar(this.value / value(input));
     }
-    format(format?: string | Transform | SingleFormat, opts: Dic = defaultOptions): string {
-      let value = checkNumber(this.value, 4);
+    format(format?: str | Transform | SingleFormat, opts: Dic = defaultOptions): str {
+      let value = checknum(this.value, 4);
       if (isNaN(value))
         return '';
       {
@@ -287,31 +292,31 @@ module scalar {
       else if (!format)
         format = defaultFormat;
 
-      let t0: number;
+      let t0: num;
 
       //escape
       while ((t0 = format.indexOf('\\', t0)) != -1)
-        format = spliceString(format, t0, 2, '"' + format[t0 + 1] + '"');
+        format = splicestr(format, t0, 2, '"' + format[t0 + 1] + '"');
 
       //unit
       if ((t0 = format.indexOf('*')) != -1) {
-        format = spliceString(format, t0, 1, '"' + opts.unit + '"');
+        format = splicestr(format, t0, 1, '"' + opts.unit + '"');
       }
 
       //currency
       if ((t0 = format.indexOf('$')) != -1) {
         let
           curr = opts.currency || currency(),
-          sel = options.currencies?.byKey(curr, 'code');
+          sel = options.currencies?.find(v => v.code == curr);
 
         //value = value * (sel.value / (opts.refCur || 1));
-        format = spliceString(format, t0, 1, opts.currencySymbol === false ? '' : '" ' + curr + '"');
+        format = splicestr(format, t0, 1, opts.currencySymbol === false ? '' : '" ' + curr + '"');
       }
       //percent
       else if ((t0 = format.indexOf('%')) != -1) {
         value = value * 100;
 
-        format = spliceString(format, t0, 1, '"%"');
+        format = splicestr(format, t0, 1, '"%"');
       }
 
       //permilhagem
@@ -323,7 +328,7 @@ module scalar {
       else if ((t0 = format.indexOf('=')) != -1) {
         throw "not implemented";
         //value = value * 100;
-        //const temp: Array<Pair2<number>> = [
+        //const temp: Array<Pair2<num>> = [
         //  { key: 'G', val: 1_000_000_000 },
         //  { key: 'm', val: 1_000_000 },
         //  { key: 'k', val: 1_000 },
@@ -335,7 +340,7 @@ module scalar {
         integer = value + '',
         pointIndex = integer.indexOf('.'),
         float = '',
-        //floatValue: string,
+        //floatValue: str,
         result = '';
 
       if (pointIndex != -1) {
@@ -363,7 +368,7 @@ module scalar {
 
             integer = integer.padStart(t0, '0');
 
-            result = spliceString(result, i - t0 + 1, t0, integer);
+            result = splicestr(result, i - t0 + 1, t0, integer);
             i += t0 - 1;
 
             break;
@@ -375,7 +380,7 @@ module scalar {
             for (let j = il; j > 0; j -= 3) {
               r = ' ' + integer.slice(Math.max(j - 3, 0), j) + r;
             }
-            result = spliceString(result, result.length - il, il, r.slice(1));
+            result = splicestr(result, result.length - il, il, r.slice(1));
 
             break;
           case '.': {
@@ -423,25 +428,25 @@ module scalar {
     /**gender */
     g: 'f' | 'm',
     /**next */
-    n?: string
-    c(value: number, opts: InFullOptions, i?: number): string;
+    n?: str
+    c(value: num, opts: InFullOptions, i?: num): str;
     /**single unit */
-    s?: string;
+    s?: str;
     /**single unit */
-    p?: string;
+    p?: str;
     /**decimal single unit*/
-    ds?: string;
+    ds?: str;
     /**decimal plural unit*/
-    dp?: string;
+    dp?: str;
   }
   export interface InFullUnit {
-    v: number,
-    exp(value?: number, opts?: InFullOptions, i?: number): string;
+    v: num,
+    exp(value?: num, opts?: InFullOptions, i?: num): str;
   }
 
   interface Settings {
-    null?: string;
-    zero?: string;
+    null?: str;
+    zero?: str;
     currencies?: Currency[];
     currency?: str;
   }
