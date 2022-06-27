@@ -1,5 +1,4 @@
 import { PeriodType } from "./time";
-import { locale } from "./index";
 
 type num = number;
 type str = string;
@@ -17,17 +16,16 @@ function splicestr(str: str, start: num, deleteCount: num, insert: str) {
  * 
  * @param input
  */
-function scalar(input: scalar.Input): scalar.Scalar;
+ export default function scalar(input: Input): Scalar;
 /**
  * 
  * @param input
  * @param format 
  */
-function scalar(input: scalar.Input, format: str): scalar.Scalar;
-function scalar(input: scalar.Input, format?: str): scalar.Scalar {
-  return new scalar.Scalar(input, format);
+ export default function scalar(input: Input, format: str): Scalar;
+export default function scalar(input: Input, format?: str): Scalar {
+  return new Scalar(input, format);
 }
-module scalar {
   export interface Currency {
     id?: num;
     code: str;
@@ -38,13 +36,15 @@ module scalar {
   export function reverseFormat(input: str, format: str) {
     return 0;
   }
+  export const inFull: InFullUnit[]=[];
+
   export function len(value: num) {
     return (value + '').length;
   }
-  const checkFormats = [
-    ///^(<d>\d{2})-(<M>\d{2})-(<y>\d{4})$/,
-    ///^(?<h>\d{2}):(?<m>\d{2})(?::(?<s>\d{2}))$/,
-  ];
+  // const checkFormats = [
+  //   ///^(<d>\d{2})-(<M>\d{2})-(<y>\d{4})$/,
+  //   ///^(?<h>\d{2}):(?<m>\d{2})(?::(?<s>\d{2}))$/,
+  // ];
   export function check(input: Input) {
 
     if (typeof input === 'string') {
@@ -174,7 +174,7 @@ module scalar {
     [Transform.inFull, function (value: num, opts: Partial<InFullOptions>) {
 
       let
-        vals = locale.inFull,
+        vals = inFull,
         int = Math.floor(value),
         dec = Math.round(value % 1 * 100);
 
@@ -241,7 +241,7 @@ module scalar {
     [SingleFormat.C]: '0,0.00 $'
   };
   export interface Locale {
-    sub: { [index: num]: any; };
+    sub: { [index: number]: any; };
   }
   export const defaultLocale: Locale = {
     sub: {
@@ -278,7 +278,7 @@ module scalar {
     div(input: Input): Scalar {
       return new Scalar(this.value / value(input));
     }
-    format(format?: str | Transform | SingleFormat, opts: Dic = defaultOptions): str {
+    fmt(format?: str | Transform | SingleFormat, opts: Dic = defaultOptions): str {
       let value = checknum(this.value, 4);
       if (isNaN(value))
         return '';
@@ -306,8 +306,8 @@ module scalar {
       //currency
       if ((t0 = format.indexOf('$')) != -1) {
         let
-          curr = opts.currency || currency(),
-          sel = options.currencies?.find(v => v.code == curr);
+          curr = opts.currency || $.currency,
+          sel = $.currencies?.find(v => v.code == curr);
 
         //value = value * (sel.value / (opts.refCur || 1));
         format = splicestr(format, t0, 1, opts.currencySymbol === false ? '' : '" ' + curr + '"');
@@ -450,12 +450,4 @@ module scalar {
     currencies?: Currency[];
     currency?: str;
   }
-  let options: Settings = {};
-  export const currency = () => options.currency;
-  export const currencies = () => options.currencies;
-  export function settings(value: Settings) {
-    options = Object.assign({}, options, value);
-  }
-}
-
-export = scalar;
+  export const $: Settings = {};

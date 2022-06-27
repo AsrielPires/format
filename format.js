@@ -1,47 +1,58 @@
-import * as time from "./time";
-import * as scalar from "./scalar";
-import * as text from "./text";
-import * as bool from "./bool";
-
-export { time, scalar, text };
-type str = string;
-type bool = boolean;
-
-interface Dic<T = any> { [key: string]: T; }
-interface Locale {
-  inFull: scalar.InFullUnit[]
+const { formatTime } = require("./time");
+const { default: scalar, inFull } = require("./scalar");
+const timeRegex = /\d{2}:\d{2}:\d{2}/;
+exports.timeFromStr = (input) => {
+  if (!input) null;
+  let data = new Date(input);
+  if (isNaN(data) && timeRegex.test(input)) {
+    data = new Date('0000-01-01 ' + input);
+  }
+  return data;
 }
-export let locale: Locale;
-export let locales: Dic<Locale> = {};
+exports.time = (input) => {
+  switch (typeof input) {
+    case "string":
+      return exports.timeFromStr(input);
+    case "number":
+      return new Date(input);
+    case "undefined":
+      return new Date();
+    default:
+      return input;
+  }
+}
+const
+  langs = {},
+  setLang = (value) => {
+    for (let key of (typeof value === 'string' ? [value] : value))
+      if (key in langs) {
+        exports.lang = langs[key];
+        inFull.splice(0, inFull.length, ...exports.lang.inFull);
+        return;
+      }
+    throw `lang(s) '${value}' not found`;
+  },
+  addLang = (key, lang) => {
+    //if (locale.scalar) {
+    //  let f = locale.inFull;
+    //  if (f)
+    //    for (let i = 0; i < f.length; i++) {
+    //      let t = f[i];
+    //      if (typeof t.exp == 'string') {
+    //        let v = t.exp;
+    //        f[i].exp = () => v;
+    //      }
+    //    }
+    //}
+    langs[key] = lang;
+  };
+exports.langs = langs;
+exports.setLang = setLang;
+exports.addLang = addLang;
 
-export function setLocale(value: str | str[]) {
-  if (typeof value === 'string')
-    locale = locales[value];
-  else for (let key of value)
-    if (key in locales) {
-      locale = locales[key];
-      break;
-    }
-  //throw `locale '${value}' not found`;
-}
-export function addLocale(key: string, locale: Locale) {
-  //if (locale.scalar) {
-  //  let f = locale.scalar.inFull;
-  //  if (f)
-  //    for (let i = 0; i < f.length; i++) {
-  //      let t = f[i];
-  //      if (typeof t.exp == 'string') {
-  //        let v = t.exp;
-  //        f[i].exp = () => v;
-  //      }
-  //    }
-  //}
-  locales[key] = locale;
-}
-addLocale('pt', {
+addLang('pt', {
   inFull: [
     { v: 0, exp: () => 'zero' },
-
     { v: 1, exp: (_, o) => o.g == 'f' ? 'uma' : 'um' },
     { v: 2, exp: (_, o) => o.g == 'f' ? 'duas' : 'dois' },
     { v: 3, exp: () => 'três' },
@@ -51,7 +62,6 @@ addLocale('pt', {
     { v: 7, exp: () => 'sete' },
     { v: 8, exp: () => 'oito' },
     { v: 9, exp: () => 'nove' },
-
     { v: 10, exp: () => 'dez' },
     { v: 11, exp: () => 'onze' },
     { v: 12, exp: () => 'doze' },
@@ -64,16 +74,32 @@ addLocale('pt', {
     { v: 19, exp: () => 'dezanove' },
     {
       v: 20, exp(n, o, i) {
-        let r: string;
+        let r;
         switch (Math.floor(n / 10)) {
-          case 2: r = 'vinte'; break;
-          case 3: r = 'trinta'; break;
-          case 4: r = 'quarenta'; break;
-          case 5: r = 'cinquenta'; break;
-          case 6: r = 'sessenta'; break;
-          case 7: r = 'setenta'; break;
-          case 8: r = 'oitenta'; break;
-          case 9: r = 'noventa'; break;
+          case 2:
+            r = 'vinte';
+            break;
+          case 3:
+            r = 'trinta';
+            break;
+          case 4:
+            r = 'quarenta';
+            break;
+          case 5:
+            r = 'cinquenta';
+            break;
+          case 6:
+            r = 'sessenta';
+            break;
+          case 7:
+            r = 'setenta';
+            break;
+          case 8:
+            r = 'oitenta';
+            break;
+          case 9:
+            r = 'noventa';
+            break;
         }
         let t = n % 10;
         if (t)
@@ -81,20 +107,35 @@ addLocale('pt', {
         return r;
       }
     },
-
     { v: 100, exp: (n, o, i) => n == 100 ? 'cem' : 'cento e ' + o.c(n - 100, o, i - 1) },
     {
       v: 200, exp(n, o, i) {
-        let r: string;
+        let r;
         switch (Math.floor(n / 100)) {
-          case 2: r = 'duzentos'; break;
-          case 3: r = 'trezentos'; break;
-          case 4: r = 'quatrocentos'; break;
-          case 5: r = 'quinhentos'; break;
-          case 6: r = 'seiscento'; break;
-          case 7: r = 'setecentos'; break;
-          case 8: r = 'oitocentos'; break;
-          case 9: r = 'novecentos'; break;
+          case 2:
+            r = 'duzentos';
+            break;
+          case 3:
+            r = 'trezentos';
+            break;
+          case 4:
+            r = 'quatrocentos';
+            break;
+          case 5:
+            r = 'quinhentos';
+            break;
+          case 6:
+            r = 'seiscento';
+            break;
+          case 7:
+            r = 'setecentos';
+            break;
+          case 8:
+            r = 'oitocentos';
+            break;
+          case 9:
+            r = 'novecentos';
+            break;
         }
         let t = n % 100;
         if (t)
@@ -103,33 +144,24 @@ addLocale('pt', {
       }
     },
     {
-      v: 1_000, exp: (n, o, i) => {
-        let
-          t1 = Math.floor(n / 1_000),
-          r = t1 == 1 ? 'mil' : o.c(t1, o, i - 1) + ' mil',
-          t2 = n % 1_000;
+      v: 1000, exp: (n, o, i) => {
+        let t1 = Math.floor(n / 1000), r = t1 == 1 ? 'mil' : o.c(t1, o, i - 1) + ' mil', t2 = n % 1000;
         if (t2)
           r += ', ' + o.c(t2, o, i - 1);
         return r;
       }
     },
     {
-      v: 1_000_000, exp: (n, o, i) => {
-        let
-          t1 = Math.floor(n / 1_000_000),
-          r = t1 == 1 ? 'um milhão' : o.c(t1, o, i - 1) + ' milhões',
-          t2 = n % 1_000_000;
+      v: 1000000, exp: (n, o, i) => {
+        let t1 = Math.floor(n / 1000000), r = t1 == 1 ? 'um milhão' : o.c(t1, o, i - 1) + ' milhões', t2 = n % 1000000;
         if (t2)
           r += ', ' + o.c(t2, o, i - 1);
         return r;
       }
     },
     {
-      v: 1_000_000_000_000, exp: (n, o, i) => {
-        let
-          t1 = Math.floor(n / 1_000_000_000_000),
-          r = t1 == 1 ? 'um bilhão' : o.c(t1, o, i - 1) + ' bilhões',
-          t2 = n % 1_000_000_000_000;
+      v: 1000000000000, exp: (n, o, i) => {
+        let t1 = Math.floor(n / 1000000000000), r = t1 == 1 ? 'um bilhão' : o.c(t1, o, i - 1) + ' bilhões', t2 = n % 1000000000000;
         if (t2)
           r += ', ' + o.c(t2, o, i - 1);
         return r;
@@ -137,7 +169,6 @@ addLocale('pt', {
     },
     //{ v: 1_000_000, exp: (o) => o.n.slice(0, 3) == '00' ? 'mil e' : 'trinta' },
     //{ v: 1_000_000_000, exp: (o) => o.n.slice(0, 3) == '00' ? 'mil e' : 'trinta' },
-
     //{ key: 0, value: { m: 'zero' } },
     //{ key: 1, value: { m: 'um', f: 'uma' } },
     //{ key: 2, value: { m: 'dois', f: 'duas' } },
@@ -158,85 +189,48 @@ addLocale('pt', {
     //{ key: 17, value: { m: 'desete' } },
     //{ key: 18, value: { m: 'desoito' } },
     //{ key: 19, value: { m: 'desenove' } },
-
     //{ key: 20, value: { m: 'vinte' } },
-
     //{ key: 30, value: { m: 'trinta' } },
-
     //{ key: 40, value: { m: 'quarenta' } },
-
     //{ key: 50, value: { m: 'cinquenta' } },
-
     //{ key: 60, value: { m: 'sesenta' } },
-
     //{ key: 70, value: { m: 'setenta' } },
     //{ key: 70, value: { m: 'setenta' } },
-
     //{ key: 80, value: { m: 'oitenta' } },
-
     //{ key: 90, value: { m: 'noventa' } },
-
     //{ key: 100, value: { m: 'cem', c: 'cento' } },
-
     //{ key: 200, value: { m: 'duzentos' } },
-
     //{ key: 300, value: { m: 'tresentos' } },
-
     //{ key: 400, value: { m: 'quatrocentos' } },
-
     //{ key: 500, value: { m: 'quinhentos' } },
-
     //{ key: 600, value: { m: 'seiscento' } },
-
     //{ key: 700, value: { m: 'setecentos' } },
-
     //{ key: 800, value: { m: 'oitocentos' } },
-
     //{ key: 900, value: { m: 'novecentos' } },
-
     //{ key: 1_000, value: { m: 'mil' } },
-
     //{ key: 1000000, value: { m: 'milhão' } },
     ////{ key: _1000000p, value: { m: 'milhões' } },
-
     ////{ key: _1000000000, value: { m: 'bilhão' } },
     ////{ key: _1000000000p, value: { m: 'bilhões' } },
-
     ////{ key: _1000000000000, value: { m: 'trilhão' } },
     ////{ key: _1000000000000p, value: { m: 'trilhões' } },
-
     //{ key: 1_000_000_000_000_000, value: { m: 'quatrilhão' } }
   ]
 });
-export type AcceptFormatValue = Date | time.Input | text.Input | scalar.Input | number | string;
-
-/**
- * 
- * @param value
- * @param exp format(t;format;if null)
- */
-export type ValueType = 's' | 'd' | 'b' | 'n';
-
-/**
- * format un number,string,date, time date-time,enumerator or boolean
- * @param value
- * @param exp
- * @param opts
- */
-export default function fmt(value: AcceptFormatValue, exp: string, opts?: Dic) {
+exports.fmt = (value, exp, opts) => {
+  if (typeof opts == "string") {
+    exp = exp + ";" + opts;
+    opts = null;
+  }
   if (value == null && opts && opts.def)
     return opts.def;
-
   if (exp == null)
-    return <any>value;
-  let split = exp.split(';', 3),
-    type = split[0],
+    return value;
+  let split = exp.split(';', 3), type = split[0],
     //se o array so tiver um element então este é o format
     format = split.length > 1 ? split[1] : type;
-
   if (value == null && split.length == 3)
     value = split[2];
-
   //a:Any
   if (split.length == 1 || type == 'a') {
     switch (typeof value) {
@@ -245,11 +239,12 @@ export default function fmt(value: AcceptFormatValue, exp: string, opts?: Dic) {
         type = 'n';
         break;
       case 'string':
-        if (isNaN(<any>value))
+        if (isNaN(value))
           type = 'n';
         else if (false)
           type = 'd';
-        else type = 't';
+        else
+          type = 't';
         break;
       case 'object':
         type = 'd';
@@ -264,20 +259,11 @@ export default function fmt(value: AcceptFormatValue, exp: string, opts?: Dic) {
   switch (split[0]) {
     //date
     case 'd':
-      return time.create(value).fmt(format);
+      return formatTime(time(value), format);
     //number
     case 'n':
-      return scalar(<scalar.Input>value).format(format, opts);
-    //string
-    case 't':
-    case 's':
-      return text(<text.Input>value).format(format);
-    //enum
-    case 'e':
-      return null;//time(value).format(t[1]);
-    //boolean
-    case 'b':
-      return bool.get(<bool.Input>value, format);//time(value).format(t[1]);
+      return scalar(value).fmt(format, opts);
     default:
   }
 }
+exports.default = exports.fmt;

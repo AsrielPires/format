@@ -1,5 +1,4 @@
 
-module bool {
   export type Input = number | boolean;
   export const enum Format {
     /**Word(Yes,No) */
@@ -20,5 +19,3 @@ module bool {
       return 'Sim';
     return 'Não'
   }
-}
-export=bool
